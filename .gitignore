@@ -1,0 +1,13 @@
+.envrc
+*.swp
+
+# Terraform sensitive files
+**/*.tfvars
+*.tfstate*
+.terraform*
+
+# hugo build output (this will be published)
+web/public
+**/.hugo_build.lock
+
+.DS_Store
