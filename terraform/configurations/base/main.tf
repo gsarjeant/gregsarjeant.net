@@ -22,7 +22,7 @@ module "gcp-bootstrap" {
   tfstate_bucket_name            = var.tfstate_bucket_name
 
   labels = {
-    "project"     = "${var.project}",
-    "environment" = "production",
+    "project"       = "${var.project}",
+    "configuration" = "base",
   }
 }
