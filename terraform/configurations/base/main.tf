@@ -6,7 +6,7 @@ provider "google" {
 terraform {
   backend "gcs" {
     bucket = "greg-sarjeant-personal-site-tfstate"
-    prefix = "prod"
+    prefix = "base"
   }
 }
 
