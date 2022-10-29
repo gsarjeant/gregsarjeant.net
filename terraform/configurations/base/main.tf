@@ -3,6 +3,13 @@ provider "google" {
   region  = var.region
 }
 
+terraform {
+  backend "gcs" {
+    bucket = "greg-sarjeant-personal-site-tfstate"
+    prefix = "prod"
+  }
+}
+
 module "gcp-bootstrap" {
   source                         = "git@github.com:gsarjeant/gcp-bootstrap.git"
   project                        = var.project
