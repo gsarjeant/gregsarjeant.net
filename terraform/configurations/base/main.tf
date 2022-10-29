@@ -23,6 +23,7 @@ module "gcp-bootstrap" {
 
   labels = {
     "project"       = "${var.project}",
+    "source"        = "terraform"
     "configuration" = "base",
   }
 }
