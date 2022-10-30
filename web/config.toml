@@ -1,0 +1,4 @@
+baseURL = 'https://gregsarjeant.net/'
+languageCode = 'en-us'
+title = 'Greg Sarjeant'
+theme = "ananke"
