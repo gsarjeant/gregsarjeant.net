@@ -19,14 +19,9 @@ variable "domain" {
   description = "domain being served by the managed services"
 }
 
-variable "app-engine-services" {
+variable "cloud-run-services" {
   type        = list(string)
-  description = "The services provided by App Engine (primarily used for ingress rule definition)"
-}
-
-variable "app-engine-service-account-roles" {
-  type        = list(string)
-  description = "The IAM roles granted to the App Engine Default Service account. Governs access to required google cloud resources."
+  description = "The services provided by Cloud Run (primarily used for ingress rule definition)"
 }
 
 variable "static_content_max_saved_states" {

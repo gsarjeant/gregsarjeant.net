@@ -79,36 +79,6 @@ resource "google_app_engine_application" "app" {
   }
 }
 
-# Only allow traffic from the load balancer or from a Google Cloud VPC
-# i.e. block public access to the appspot URLs
-#
-# I've never been a big fan of using my IaC platform to deploy apps to the managed infrastructure,
-# so terraform won't know the app engine service names
-#
-# TODO: Uncomment after deploying services
-#resource "google_app_engine_service_network_settings" "app-engine-network-settings" {
-#  for_each = toset(var.app-engine-services)
-#
-#  service = each.key
-#  network_settings {
-#    ingress_traffic_allowed = "INGRESS_TRAFFIC_ALLOWED_INTERNAL_AND_LB"
-#  }
-#}
-
-# Add the Default App Engine service account to the datastore.user built-in role
-#
-# TODO: Uncomment and apply after App Engine instance is created
-#       This causes the plan to fail if the service account doesn't already exist.
-#data "google_app_engine_default_service_account" "gae_account" {
-#}
-
-#resource "google_project_iam_member" "gae_default_service_account_roles" {
-#for_each = toset(var.app-engine-service-account-roles)
-#project  = var.project
-#role     = each.key
-#member   = "serviceAccount:${data.google_app_engine_default_service_account.gae_account.email}"
-#}
-
 # Add firebase authentication to the serverless project
 resource "google_firebase_project" "firebase" {
   provider = google-beta
