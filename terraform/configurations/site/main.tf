@@ -115,27 +115,27 @@ resource "google_firebase_project" "firebase" {
   project  = var.project
 }
 
-# Create a network endpoint group (NEG) for the serverless (i.e. App Engine) app
-resource "google_compute_region_network_endpoint_group" "appengine_neg" {
-  name                  = "${var.project}-appengine-neg"
+# Create a network endpoint group (NEG) for Cloud Run 
+resource "google_compute_region_network_endpoint_group" "cloud_run_neg" {
+  name                  = "${var.project}-cloud-run-neg"
   network_endpoint_type = "SERVERLESS"
   region                = var.region
-  app_engine {
+  cloud_run {
     url_mask = "/<service>"
   }
 }
 
 # Create a load balancer backend for the serverless NEG
-# This will allow the load balancer to route API requests to the App Engine app.
-resource "google_compute_backend_service" "appengine" {
-  name = "${var.project}-appengine-backend"
+# This will allow the load balancer to route API requests to the appropriate serverlessApp Engine app.
+resource "google_compute_backend_service" "cloud_run" {
+  name = "${var.project}-cloud-run-backend"
 
   protocol    = "HTTP"
   port_name   = "http"
   timeout_sec = 30
 
   backend {
-    group = google_compute_region_network_endpoint_group.appengine_neg.id
+    group = google_compute_region_network_endpoint_group.cloud_run_neg.id
   }
 }
 
@@ -189,7 +189,7 @@ resource "google_compute_url_map" "site_default" {
 
   path_matcher {
     name            = "api"
-    default_service = google_compute_backend_service.appengine.id
+    default_service = google_compute_backend_service.cloud_run.id
   }
 }
 
