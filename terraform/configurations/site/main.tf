@@ -69,6 +69,9 @@ resource "google_compute_backend_bucket" "static_content_backend" {
 }
 
 # Create the app engine application that will host the API services
+# NOTE: No longer using App Engine as of 2022-11-03, but I'm leaving this in the config
+#       because App Engine can't be deleted from a project once enabled.
+#       Leaving this in the terraform code will act as documentation to show that it's active.
 resource "google_app_engine_application" "app" {
   project       = var.project
   location_id   = var.region
@@ -144,7 +147,7 @@ resource "google_compute_url_map" "site_default" {
     path_matcher = "default"
   }
 
-  #requests for the api go to the app engine app
+  #requests for the api go to the serverless backend (Cloud Run)
   host_rule {
     hosts = [
       "api.${var.domain}",
@@ -226,4 +229,14 @@ resource "google_compute_global_forwarding_rule" "site_https_redirect" {
   target     = google_compute_target_http_proxy.site_https_redirect.id
   port_range = "80"
   ip_address = google_compute_global_address.site.address
+}
+
+# Create an artifact registry repository for API docker images
+resource "google_artifact_registry_repository" "api_docker" {
+  project       = var.project
+  location      = var.region
+  repository_id = "${var.project}-api-docker"
+  description   = "Docker images for Cloud Run services that provide API functionality for gregsarjeant.net"
+  format        = "DOCKER"
+  labels        = local.common_labels
 }
