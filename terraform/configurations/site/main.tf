@@ -103,9 +103,15 @@ resource "google_compute_region_network_endpoint_group" "cloud_run_neg" {
 resource "google_compute_backend_service" "cloud_run" {
   name = "${var.project}-cloud-run-backend"
 
-  protocol    = "HTTP"
-  port_name   = "http"
-  timeout_sec = 30
+  protocol        = "HTTP"
+  port_name       = "http"
+  timeout_sec     = 30
+  security_policy = google_compute_security_policy.backend_policy.id
+
+  log_config {
+    enable      = true
+    sample_rate = 1.0
+  }
 
   backend {
     group = google_compute_region_network_endpoint_group.cloud_run_neg.id
@@ -144,10 +150,10 @@ resource "google_compute_url_map" "site_default" {
     hosts = [
       var.domain,
     ]
-    path_matcher = "default"
+    path_matcher = "site"
   }
 
-  #requests for the api go to the serverless backend (Cloud Run)
+  # requests for the api go to the serverless backend (Cloud Run)
   host_rule {
     hosts = [
       "api.${var.domain}",
@@ -155,8 +161,24 @@ resource "google_compute_url_map" "site_default" {
     path_matcher = "api"
   }
 
+  # requests for all other hosts to the serverless backend (Cloud Run)
+  # this allows cloud armor rules to block unwanted traffic
+  #
+  # TODO: set up a black hole for this traffic
+  host_rule {
+    hosts = [
+      "*",
+    ]
+    path_matcher = "default"
+  }
+
   path_matcher {
     name            = "default"
+    default_service = google_compute_backend_service.cloud_run.id
+  }
+
+  path_matcher {
+    name            = "site"
     default_service = google_compute_backend_bucket.static_content_backend.id
   }
 
@@ -239,4 +261,58 @@ resource "google_artifact_registry_repository" "api_docker" {
   description   = "Docker images for Cloud Run services that provide API functionality for gregsarjeant.net"
   format        = "DOCKER"
   labels        = local.common_labels
+}
+
+# Create a Cloud Armor edge security policy
+# to block requests to the Load Balancer IP.
+resource "google_compute_security_policy" "backend_policy" {
+  name    = "backend-policy"
+  project = var.project
+  type    = "CLOUD_ARMOR"
+
+  advanced_options_config {
+    log_level = "VERBOSE"
+  }
+
+  # This rule blocks direct requests to the load balancer's IP, and anything
+  # else that doesn't match the domain.
+  # This traffic isn't coming from anything I care about.
+  rule {
+    action   = "allow"
+    priority = "1000"
+    match {
+      expr {
+        expression = "has(request.headers['host']) && request.headers['host'].contains('${var.domain}')"
+      }
+    }
+    description = "Allow access to requests that match the domain."
+    preview     = false
+  }
+
+  # Deny any traffic that isn't explicitly allowed by a higher-priority rule.
+  rule {
+    action   = "deny(404)"
+    priority = "200000"
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = ["*"]
+      }
+    }
+    description = "Deny by default"
+    preview     = false
+  }
+
+  # Leave default allow rule in place until testing is finished
+  rule {
+    action   = "allow"
+    priority = "2147483647"
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = ["*"]
+      }
+    }
+    description = "Allow by default until testing is finished"
+  }
 }
