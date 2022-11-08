@@ -16,6 +16,11 @@ provider "google-beta" {
   region  = var.region
 }
 
+# This data source will be used to retrieve the project number where needed
+# (currently only the storage bucket for the cloud function)
+data "google_project" "project" {
+}
+
 locals {
   common_labels = {
     "source"        = "terraform",
@@ -68,6 +73,50 @@ resource "google_compute_backend_bucket" "static_content_backend" {
   enable_cdn  = true
 }
 
+# Create a blackhole storage bucket for unwanted traffic
+resource "google_storage_bucket" "blackhole_storage_bucket" {
+  name                        = "${var.project}_blackhole_storage_bucket"
+  project                     = var.project
+  location                    = var.dual_region
+  uniform_bucket_level_access = true
+  labels                      = local.common_labels
+  website {
+    main_page_suffix = "index.html"
+    not_found_page   = "404.html"
+  }
+  versioning {
+    enabled = true
+  }
+  lifecycle {
+    prevent_destroy = true
+  }
+  lifecycle_rule {
+    condition {
+      num_newer_versions = var.static_content_max_saved_states
+      with_state         = "ANY"
+    }
+    action {
+      type = "Delete"
+    }
+  }
+}
+
+# Make the blackhole storage bucket publicly readable so it can serve static content on the internet.
+resource "google_storage_bucket_iam_member" "blackhole_allUsers" {
+  bucket = google_storage_bucket.blackhole_storage_bucket.name
+  role   = "roles/storage.objectViewer"
+  member = "allUsers"
+}
+
+# Create a load balancer backend for the storage bucket.
+# This will allow the load balancer to route requests for static content to the bucket.
+resource "google_compute_backend_bucket" "blackhole_storage_bucket_backend" {
+  name        = "${var.project}-blackhole-storage-bucket-backend"
+  description = "Unmatched requests are routed to this bucket, which contains nothing and always returns a 404."
+  bucket_name = google_storage_bucket.blackhole_storage_bucket.name
+  enable_cdn  = true
+}
+
 # Create the app engine application that will host the API services
 # NOTE: No longer using App Engine as of 2022-11-03, but I'm leaving this in the config
 #       because App Engine can't be deleted from a project once enabled.
@@ -98,8 +147,8 @@ resource "google_compute_region_network_endpoint_group" "cloud_run_neg" {
   }
 }
 
-# Create a load balancer backend for the serverless NEG
-# This will allow the load balancer to route API requests to the appropriate serverlessApp Engine app.
+# Create a load balancer backend for the Cloud Run NEG
+# This will allow the load balancer to route API requests to Cloud Run
 resource "google_compute_backend_service" "cloud_run" {
   name = "${var.project}-cloud-run-backend"
 
@@ -137,13 +186,15 @@ resource "google_compute_managed_ssl_certificate" "site" {
 }
 
 # Create a URL map to route requests to the appropriate backend:
-#   default - route to bucket
-#   api.*   - route to serverless NEG
+#   bare domain - route to static site cloud storage bucket
+#   api.*       - route to serverless NEG
+#   all others  - route to black hole cloud storage bucket (empty except for a 404 page)
 resource "google_compute_url_map" "site_default" {
   name        = "${var.project}-site-default"
   description = "Load balancer routing rules for the ${var.domain} domain."
 
-  default_service = google_compute_backend_bucket.static_content_backend.id
+  # All requests that aren't matched by a host rule below are routed to the blackhole bucket
+  default_service = google_compute_backend_bucket.blackhole_storage_bucket_backend.id
 
   # requests for the bare domain go to the static content bucket
   host_rule {
@@ -159,22 +210,6 @@ resource "google_compute_url_map" "site_default" {
       "api.${var.domain}",
     ]
     path_matcher = "api"
-  }
-
-  # requests for all other hosts to the serverless backend (Cloud Run)
-  # this allows cloud armor rules to block unwanted traffic
-  #
-  # TODO: set up a black hole for this traffic
-  host_rule {
-    hosts = [
-      "*",
-    ]
-    path_matcher = "default"
-  }
-
-  path_matcher {
-    name            = "default"
-    default_service = google_compute_backend_service.cloud_run.id
   }
 
   path_matcher {
@@ -274,9 +309,8 @@ resource "google_compute_security_policy" "backend_policy" {
     log_level = "VERBOSE"
   }
 
-  # This rule blocks direct requests to the load balancer's IP, and anything
-  # else that doesn't match the domain.
-  # This traffic isn't coming from anything I care about.
+  # This rule will allow traffic that has an HTTP host header that matches the domain.
+  # Anything else is probably a bot or scanner that is brute-forcing IPs.
   rule {
     action   = "allow"
     priority = "1000"
@@ -292,20 +326,6 @@ resource "google_compute_security_policy" "backend_policy" {
   # Deny any traffic that isn't explicitly allowed by a higher-priority rule.
   rule {
     action   = "deny(404)"
-    priority = "200000"
-    match {
-      versioned_expr = "SRC_IPS_V1"
-      config {
-        src_ip_ranges = ["*"]
-      }
-    }
-    description = "Deny by default"
-    preview     = false
-  }
-
-  # Leave default allow rule in place until testing is finished
-  rule {
-    action   = "allow"
     priority = "2147483647"
     match {
       versioned_expr = "SRC_IPS_V1"
@@ -313,6 +333,6 @@ resource "google_compute_security_policy" "backend_policy" {
         src_ip_ranges = ["*"]
       }
     }
-    description = "Allow by default until testing is finished"
+    description = "Deny by default"
   }
 }
