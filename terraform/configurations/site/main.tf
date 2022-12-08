@@ -138,12 +138,42 @@ resource "google_firebase_project" "firebase" {
 }
 
 # Create a network endpoint group (NEG) for Cloud Run 
+resource "google_compute_region_network_endpoint_group" "cloud_run_neg_default" {
+  name                  = "${var.project}-cloud-run-neg-default"
+  network_endpoint_type = "SERVERLESS"
+  region                = var.region
+  cloud_run {
+    service = "web"
+  }
+}
+
+# Create a network endpoint group (NEG) for Cloud Run 
 resource "google_compute_region_network_endpoint_group" "cloud_run_neg" {
   name                  = "${var.project}-cloud-run-neg"
   network_endpoint_type = "SERVERLESS"
   region                = var.region
   cloud_run {
     url_mask = "/<service>"
+  }
+}
+
+# Create a load balancer backend for the Cloud Run NEG
+# This will allow the load balancer to route API requests to Cloud Run
+resource "google_compute_backend_service" "cloud_run_default" {
+  name = "${var.project}-cloud-run-backend-default"
+
+  protocol        = "HTTP"
+  port_name       = "http"
+  timeout_sec     = 30
+  security_policy = google_compute_security_policy.backend_policy.id
+
+  log_config {
+    enable      = true
+    sample_rate = 1.0
+  }
+
+  backend {
+    group = google_compute_region_network_endpoint_group.cloud_run_neg_default.id
   }
 }
 
@@ -213,8 +243,9 @@ resource "google_compute_url_map" "site_default" {
   }
 
   path_matcher {
-    name            = "site"
-    default_service = google_compute_backend_bucket.static_content_backend.id
+    name = "site"
+    #default_service = google_compute_backend_bucket.static_content_backend.id
+    default_service = google_compute_backend_service.cloud_run_default.id
   }
 
   path_matcher {
@@ -292,7 +323,7 @@ resource "google_compute_global_forwarding_rule" "site_https_redirect" {
 resource "google_artifact_registry_repository" "api_docker" {
   project       = var.project
   location      = var.region
-  repository_id = "${var.project}-api-docker"
+  repository_id = "${var.project}-docker"
   description   = "Docker images for Cloud Run services that provide API functionality for gregsarjeant.net"
   format        = "DOCKER"
   labels        = local.common_labels
