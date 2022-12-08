@@ -1,0 +1,43 @@
+.menuList {
+    list-style-type: none;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+.menuItem {
+    float: left;
+}
+
+.menuItemLast {
+    float: right;
+}
+
+.menuLink {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+/* Change the link color to #111 (black) on hover */
+.menuLink:hover {
+    background-color: #111;
+    text-decoration: none;
+}
+
+.menuLinkActive {
+    composes: menuLink;
+    background-color: white;
+    color: black;
+}
+
+.menuLinkActive:hover {
+    background-color: white;
+    color: black;
+}

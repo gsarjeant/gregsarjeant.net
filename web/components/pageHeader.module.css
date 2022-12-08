@@ -1,0 +1,11 @@
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+}
+
+.headerCenter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

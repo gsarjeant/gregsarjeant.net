@@ -15,3 +15,12 @@ web/public
 
 # VScode settings
 .vscode
+
+# Next.js
+node_modules
+.next/
+out/
+build
+
+# debug
+npm-debug.log*
