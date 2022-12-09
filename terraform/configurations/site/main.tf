@@ -137,7 +137,10 @@ resource "google_firebase_project" "firebase" {
   project  = var.project
 }
 
-# Create a network endpoint group (NEG) for Cloud Run 
+# Cloud Run NEGs and load balancer backends
+
+# Default Cloud Run NEG. Routes requests to the web service.
+# The web service is a next.js application that provides the user-facing site. 
 resource "google_compute_region_network_endpoint_group" "cloud_run_neg_default" {
   name                  = "${var.project}-cloud-run-neg-default"
   network_endpoint_type = "SERVERLESS"
@@ -147,18 +150,15 @@ resource "google_compute_region_network_endpoint_group" "cloud_run_neg_default" 
   }
 }
 
-# Create a network endpoint group (NEG) for Cloud Run 
-resource "google_compute_region_network_endpoint_group" "cloud_run_neg" {
-  name                  = "${var.project}-cloud-run-neg"
-  network_endpoint_type = "SERVERLESS"
-  region                = var.region
-  cloud_run {
-    url_mask = "/<service>"
-  }
-}
-
-# Create a load balancer backend for the Cloud Run NEG
-# This will allow the load balancer to route API requests to Cloud Run
+# Default Cloud Run Backend.
+# Mapped to the default NEG that routes to the web service.
+# This backend will be mapped to the bare domain.
+#
+# Enable Cloud CDN on this backend and cache all static content.
+# The next.js site is statically rendered, so it can be safely cached.
+# If needed, the cache can be invalidated on build, or I'll play with the headers.
+# Setting serve_while_stale to 1 day to offset the occasional startup lag when all instances are spun down.
+# (If the site doesn't get one request a day then who really cares if there's a startup lag of a few seconds on that request?)
 resource "google_compute_backend_service" "cloud_run_default" {
   name = "${var.project}-cloud-run-backend-default"
 
@@ -166,6 +166,18 @@ resource "google_compute_backend_service" "cloud_run_default" {
   port_name       = "http"
   timeout_sec     = 30
   security_policy = google_compute_security_policy.backend_policy.id
+  enable_cdn      = true
+
+  cdn_policy {
+    cache_mode        = "CACHE_ALL_STATIC"
+    default_ttl       = 3600
+    client_ttl        = 3600
+    max_ttl           = 3600
+    serve_while_stale = 86400
+    cache_key_policy {
+      include_host = true
+    }
+  }
 
   log_config {
     enable      = true
@@ -177,8 +189,21 @@ resource "google_compute_backend_service" "cloud_run_default" {
   }
 }
 
-# Create a load balancer backend for the Cloud Run NEG
-# This will allow the load balancer to route API requests to Cloud Run
+# NEG for Cloud Run API endpoints
+# This NEG will route requests to the cloud run service whose name matches the first part of the URL path
+# if such a service exists.
+resource "google_compute_region_network_endpoint_group" "cloud_run_neg" {
+  name                  = "${var.project}-cloud-run-neg"
+  network_endpoint_type = "SERVERLESS"
+  region                = var.region
+  cloud_run {
+    url_mask = "/<service>"
+  }
+}
+
+# Cloud Run API backend
+# Mapped to the Cloud Run API NEG that routes requests to the appropriate service.
+# This backend will be mapped to api.<domain>
 resource "google_compute_backend_service" "cloud_run" {
   name = "${var.project}-cloud-run-backend"
 
