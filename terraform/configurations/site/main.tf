@@ -150,6 +150,16 @@ resource "google_compute_region_network_endpoint_group" "cloud_run_neg_default" 
   }
 }
 
+# Service Accounts for Cloud Run
+# Each cloud run service will run as a separate service account that has only the permissions
+# required for that service.
+resource "google_service_account" "cloud_run_web_service_account" {
+  project      = var.project
+  account_id   = "cloud-run-web"
+  display_name = "Service Account for the Cloud Run 'web' service."
+  description  = "Managed by terraform"
+}
+
 # Default Cloud Run Backend.
 # Mapped to the default NEG that routes to the web service.
 # This backend will be mapped to the bare domain.

@@ -19,11 +19,6 @@ variable "domain" {
   description = "domain being served by the managed services"
 }
 
-variable "cloud-run-services" {
-  type        = list(string)
-  description = "The services provided by Cloud Run (primarily used for ingress rule definition)"
-}
-
 variable "static_content_max_saved_states" {
   type        = number
   default     = 10
