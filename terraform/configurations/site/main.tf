@@ -29,50 +29,6 @@ locals {
   }
 }
 
-# Create a storage bucket for static content
-resource "google_storage_bucket" "static_content_storage_bucket" {
-  name                        = "${var.project}_static_content_storage_bucket"
-  project                     = var.project
-  location                    = var.dual_region
-  uniform_bucket_level_access = true
-  labels                      = local.common_labels
-  website {
-    main_page_suffix = "index.html"
-    not_found_page   = "404.html"
-  }
-  versioning {
-    enabled = true
-  }
-  lifecycle {
-    prevent_destroy = true
-  }
-  lifecycle_rule {
-    condition {
-      num_newer_versions = var.static_content_max_saved_states
-      with_state         = "ANY"
-    }
-    action {
-      type = "Delete"
-    }
-  }
-}
-
-# Make the storage bucket publicly readable so it can serve static content on the internet.
-resource "google_storage_bucket_iam_member" "allUsers" {
-  bucket = google_storage_bucket.static_content_storage_bucket.name
-  role   = "roles/storage.objectViewer"
-  member = "allUsers"
-}
-
-# Create a load balancer backend for the storage bucket.
-# This will allow the load balancer to route requests for static content to the bucket.
-resource "google_compute_backend_bucket" "static_content_backend" {
-  name        = "${var.project}-domain-static-content-bucket"
-  description = "Requests for static content are routed to the storage bucket via this backend."
-  bucket_name = google_storage_bucket.static_content_storage_bucket.name
-  enable_cdn  = true
-}
-
 # Create a blackhole storage bucket for unwanted traffic
 resource "google_storage_bucket" "blackhole_storage_bucket" {
   name                        = "${var.project}_blackhole_storage_bucket"
@@ -92,7 +48,7 @@ resource "google_storage_bucket" "blackhole_storage_bucket" {
   }
   lifecycle_rule {
     condition {
-      num_newer_versions = var.static_content_max_saved_states
+      num_newer_versions = 2
       with_state         = "ANY"
     }
     action {
