@@ -30,6 +30,8 @@ locals {
 }
 
 # Create a blackhole storage bucket for unwanted traffic
+# This only serves a 404 page and catches obviously nefarious things 
+# like direct requests to the IP or spoofed domains.
 resource "google_storage_bucket" "blackhole_storage_bucket" {
   name                        = "${var.project}_blackhole_storage_bucket"
   project                     = var.project
@@ -64,7 +66,7 @@ resource "google_storage_bucket_iam_member" "blackhole_allUsers" {
   member = "allUsers"
 }
 
-# Create a load balancer backend for the storage bucket.
+# Create a load balancer backend for the blackhole storage bucket.
 # This will allow the load balancer to route requests for static content to the bucket.
 resource "google_compute_backend_bucket" "blackhole_storage_bucket_backend" {
   name        = "${var.project}-blackhole-storage-bucket-backend"
@@ -234,8 +236,7 @@ resource "google_compute_url_map" "site_default" {
   }
 
   path_matcher {
-    name = "site"
-    #default_service = google_compute_backend_bucket.static_content_backend.id
+    name            = "site"
     default_service = google_compute_backend_service.cloud_run_default.id
   }
 
