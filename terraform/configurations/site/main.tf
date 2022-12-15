@@ -99,8 +99,8 @@ resource "google_firebase_project" "firebase" {
 
 # Default Cloud Run NEG. Routes requests to the web service.
 # The web service is a next.js application that provides the user-facing site. 
-resource "google_compute_region_network_endpoint_group" "cloud_run_neg_default" {
-  name                  = "${var.project}-cloud-run-neg-default"
+resource "google_compute_region_network_endpoint_group" "cloud_run_neg_web" {
+  name                  = "${var.project}-cloud-run-neg-web"
   network_endpoint_type = "SERVERLESS"
   region                = var.region
   cloud_run {
@@ -127,8 +127,8 @@ resource "google_service_account" "cloud_run_web_service_account" {
 # If needed, the cache can be invalidated on build, or I'll play with the headers.
 # Setting serve_while_stale to 1 day to offset the occasional startup lag when all instances are spun down.
 # (If the site doesn't get one request a day then who really cares if there's a startup lag of a few seconds on that request?)
-resource "google_compute_backend_service" "cloud_run_default" {
-  name = "${var.project}-cloud-run-backend-default"
+resource "google_compute_backend_service" "cloud_run_backend_web" {
+  name = "${var.project}-cloud-run-backend-web"
 
   protocol        = "HTTP"
   port_name       = "http"
@@ -137,13 +137,9 @@ resource "google_compute_backend_service" "cloud_run_default" {
   enable_cdn      = true
 
   cdn_policy {
-    cache_mode        = "CACHE_ALL_STATIC"
-    default_ttl       = 3600
-    client_ttl        = 3600
-    max_ttl           = 3600
-    serve_while_stale = 86400
+    cache_mode = "USE_ORIGIN_HEADERS"
     cache_key_policy {
-      include_host = true
+      include_query_string = true
     }
   }
 
@@ -153,7 +149,7 @@ resource "google_compute_backend_service" "cloud_run_default" {
   }
 
   backend {
-    group = google_compute_region_network_endpoint_group.cloud_run_neg_default.id
+    group = google_compute_region_network_endpoint_group.cloud_run_neg_web.id
   }
 }
 
@@ -219,12 +215,12 @@ resource "google_compute_url_map" "site_default" {
   # All requests that aren't matched by a host rule below are routed to the blackhole bucket
   default_service = google_compute_backend_bucket.blackhole_storage_bucket_backend.id
 
-  # requests for the bare domain go to the static content bucket
+  # requests for the bare domain go to the "web" cloud run service
   host_rule {
     hosts = [
       var.domain,
     ]
-    path_matcher = "site"
+    path_matcher = "web"
   }
 
   # requests for the api go to the serverless backend (Cloud Run)
@@ -236,8 +232,8 @@ resource "google_compute_url_map" "site_default" {
   }
 
   path_matcher {
-    name            = "site"
-    default_service = google_compute_backend_service.cloud_run_default.id
+    name            = "web"
+    default_service = google_compute_backend_service.cloud_run_backend_web.id
   }
 
   path_matcher {
