@@ -24,6 +24,8 @@ export default function SiteHead({ title, description, path, imagePath, contentT
             <meta name="og:title" content={title ? title : siteTitle} />
             <meta name="og:type" content={contentType ? contentType : "website"} />
             <meta name="og:url" content={path ? siteUrl + path : siteUrl} />
+
+            <meta name="viewport" content="initial-scale=1, width=device-width" />
         </Head>
     )
 }
