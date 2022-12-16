@@ -1,26 +1,17 @@
 import Link from 'next/link';
-import { useRouter } from "next/router";
 import { MarkGithubIcon } from '@primer/octicons-react'
 import Tooltip from '@mui/material/Tooltip';
 import styles from './siteMenu.module.css';
-import { capitalize } from '../lib/utils.js';
-
-const siteSections = [
-    { name: "Home", href: "/" },
-    { name: "Posts", href: "/posts" },
-];
+import { siteSections, getCurrentSection } from '../lib/utils';
 
 export default function SiteMenu() {
-    const router = useRouter();
-    const urlFirstPath = `/${router.pathname.split('/')[1]}`;
-
     return (
         <>
             <ul className={styles.menuList}>
                 {siteSections.map((section) => (
                     <li key={section.name} className={styles.menuItem}>
                         {/* If I ever need this elsewhere, I'll pull it out into a separate component, but it's fine here for now. */}
-                        <Link className={section.href === urlFirstPath ? styles.menuLinkActive : styles.menuLink} href={`${section.href}`}>
+                        <Link className={section.href === `/${getCurrentSection()}` ? styles.menuLinkActive : styles.menuLink} href={`${section.href}`}>
                             {section.name}
                         </Link>
                     </li>
