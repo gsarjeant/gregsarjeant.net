@@ -11,10 +11,10 @@ function sectionHeader(section) {
     );
 }
 
-export default function Layout({ children, sections, section, index }) {
+export default function Layout({ children, section, index }) {
     return (
         <>
-            {siteMenu(sections, section)}
+            {siteMenu()}
             <div className={styles.container}>
                 {
                     index ? sectionHeader(section) : false

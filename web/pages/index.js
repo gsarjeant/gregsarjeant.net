@@ -6,15 +6,12 @@ import html from 'remark-html';
 import Layout from '../components/layout';
 import SiteHead from '../components/siteHead';
 import utilStyles from '../styles/utils.module.css';
-import { getMenuSections } from '../lib/serverUtils';
 
 export async function getStaticProps() {
   const indexContent = await (getIndexContent());
-  const sections = getMenuSections();
 
   return {
     props: {
-      sections,
       indexContent,
     },
   };
@@ -39,9 +36,9 @@ async function getIndexContent() {
   }
 }
 
-export default function Home({ sections, indexContent }) {
+export default function Home({ indexContent }) {
   return (
-    <Layout sections={sections} section="home" index>
+    <Layout section="home" index>
       <SiteHead />
       <section className={utilStyles.headingMd}>
         <p>{indexContent.tagline}</p>

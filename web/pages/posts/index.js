@@ -3,24 +3,21 @@ import Date from '../../components/date';
 import Layout from '../../components/layout';
 import SiteHead from '../../components/siteHead';
 import { getSortedPostsData } from '../../lib/posts';
-import { getMenuSections } from '../../lib/serverUtils';
 import utilStyles from '../../styles/utils.module.css';
 
 export async function getStaticProps() {
   const allPostsData = getSortedPostsData();
-  const sections = getMenuSections();
 
   return {
     props: {
       allPostsData,
-      sections,
     },
   };
 }
 
-export default function Posts({ sections, allPostsData }) {
+export default function Posts({ allPostsData }) {
   return (
-    <Layout sections={sections} section="posts" index>
+    <Layout section="posts" index>
       <SiteHead />
       <section className={`${utilStyles.headingMd} ${utilStyles.padding1px}`}>
         <ul className={utilStyles.list}>
