@@ -25,14 +25,13 @@ export async function getStaticPaths() {
 
 export default function Post({ postData }) {
     return (
-        <Layout section="posts">
+        <Layout>
             <SiteHead
                 title={postData.title}
                 contentType="article"
                 description={postData.description}
                 path={`/posts/${postData.id}`}
             />
-
 
             <PageHeader content={postData.title} />
             <article>
