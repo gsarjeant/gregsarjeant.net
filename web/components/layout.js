@@ -6,6 +6,7 @@ import { capitalize, getCurrentSection } from '../lib/utils';
 
 function sectionHeader() {
     const section = getCurrentSection();
+
     // If section is undefined, then we're on the homepage (/). Display the author name.
     // For other sections, display the name of the section.
     const content = section ? capitalize(section) : authorName;
