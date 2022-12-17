@@ -17,7 +17,7 @@ provider "google-beta" {
 }
 
 # This data source will be used to retrieve the project number where needed
-# (currently only the storage bucket for the cloud function)
+# (currently unused)
 data "google_project" "project" {
 }
 
@@ -29,7 +29,7 @@ locals {
   }
 }
 
-# Create a blackhole storage bucket for unwanted traffic
+# Create a blackhole storage bucket for unwanted traffic.
 # This only serves a 404 page and catches obviously nefarious things 
 # like direct requests to the IP or spoofed domains.
 resource "google_storage_bucket" "blackhole_storage_bucket" {
@@ -118,15 +118,13 @@ resource "google_service_account" "cloud_run_web_service_account" {
   description  = "Managed by terraform"
 }
 
-# Default Cloud Run Backend.
-# Mapped to the default NEG that routes to the web service.
+# Default Cloud Run backend.
+# Mapped to the serverless NEG that routes to the web service.
 # This backend will be mapped to the bare domain.
 #
-# Enable Cloud CDN on this backend and cache all static content.
+# Enable Cloud CDN on this backend and cache content as specified in cache-control headers.
 # The next.js site is statically rendered, so it can be safely cached.
-# If needed, the cache can be invalidated on build, or I'll play with the headers.
-# Setting serve_while_stale to 1 day to offset the occasional startup lag when all instances are spun down.
-# (If the site doesn't get one request a day then who really cares if there's a startup lag of a few seconds on that request?)
+# If needed, the cache can be invalidated on build.
 resource "google_compute_backend_service" "cloud_run_backend_web" {
   name = "${var.project}-cloud-run-backend-web"
 
@@ -169,6 +167,8 @@ resource "google_compute_region_network_endpoint_group" "cloud_run_neg" {
 # Cloud Run API backend
 # Mapped to the Cloud Run API NEG that routes requests to the appropriate service.
 # This backend will be mapped to api.<domain>
+#
+# I'm not enabling Cloud CDN on the API backend, since that data will be dynamic.
 resource "google_compute_backend_service" "cloud_run" {
   name = "${var.project}-cloud-run-backend"
 
@@ -214,6 +214,7 @@ resource "google_compute_url_map" "site_default" {
   description = "Load balancer routing rules for the ${var.domain} domain."
 
   # All requests that aren't matched by a host rule below are routed to the blackhole bucket
+  # This prevents obviously nefarious traffic from ever reaching the Cloud Run services (i.e. the real site)
   default_service = google_compute_backend_bucket.blackhole_storage_bucket_backend.id
 
   # requests for the bare domain go to the "web" cloud run service
@@ -268,14 +269,17 @@ resource "google_compute_url_map" "site_https_redirect" {
   name = "${var.project}-site-https-redirect"
 
   # The default redirect doesn't specify a host target,
-  # so it is handled by the default backend (the storage bucket)
+  # so it is handled by the default backend
+  #
+  # i.e. the web backend for requests to gregsarjeant.net,
+  #      or the blackhole bucket for others (e.g. the ip)
   default_url_redirect {
     https_redirect         = true
     redirect_response_code = "MOVED_PERMANENTLY_DEFAULT"
     strip_query            = false
   }
 
-  # Add a host rule to match requests to api.,
+  # Add a host rule to match requests to api.<domain>,
   # so that they can be redirected to the serverless NEG backend
   host_rule {
     hosts = [
