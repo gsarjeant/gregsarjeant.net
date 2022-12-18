@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { MarkGithubIcon } from '@primer/octicons-react'
 import Tooltip from '@mui/material/Tooltip';
 import styles from './siteMenu.module.css';
-import { siteSections, getCurrentSection } from '../lib/utils';
+import { getCurrentSection } from '../lib/utils';
+import { siteSections } from "../lib/settings";
 
 export default function SiteMenu() {
     return (
