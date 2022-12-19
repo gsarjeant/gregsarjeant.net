@@ -2,7 +2,7 @@ import styles from './layout.module.css';
 import siteMenu from './siteMenu'
 import PageHeader from '../components/pageHeader'
 import { authorName } from '../lib/settings';
-import { capitalize, getCurrentSection } from '../lib/utils';
+import { capitalize, getCurrentSection, isIndexPage } from '../lib/utils';
 
 function sectionHeader() {
     const section = getCurrentSection();
@@ -16,15 +16,17 @@ function sectionHeader() {
     );
 }
 
-export default function Layout({ children, index }) {
+export default function Layout({ children }) {
     return (
         <>
             {siteMenu()}
             <div className={styles.container}>
-                {
-                    index ? sectionHeader() : false
-                }
-                <main>{children}</main>
+                <main>
+                    {
+                        isIndexPage() ? sectionHeader() : false
+                    }
+                    {children}
+                </main>
             </div >
         </>
     );

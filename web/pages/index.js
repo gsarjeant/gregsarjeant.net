@@ -38,7 +38,7 @@ async function getIndexContent() {
 
 export default function Home({ indexContent }) {
   return (
-    <Layout index>
+    <Layout>
       <SiteHead />
       <section className={utilStyles.headingMd}>
         <p>{indexContent.tagline}</p>
