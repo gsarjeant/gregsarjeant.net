@@ -7,8 +7,8 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #333;
-    color: white;
+    background-color: var(--menu-default-background-color);
+    color: var(--menu-default-color);
 }
 
 .menuItem {
@@ -20,8 +20,8 @@
 
 .menuItemActive {
     composes: menuItem;
-    background-color: white;
-    color: black;
+    background-color: var(--menu-active-background-color);
+    color: var(--menu-active-color);
 }
 
 .menuItemRight {
@@ -41,7 +41,7 @@
 
 /* Change the link color to #111 (black) on hover */
 .menuLink:hover {
-    background-color: #111;
+    background-color: var(--menu-hover-background-color);
     text-decoration: none;
 }
 

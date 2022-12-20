@@ -26,5 +26,5 @@
 }
 
 .lightText {
-    color: #666;
+    color: var(--light-text-color);
 }
