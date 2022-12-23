@@ -18,14 +18,13 @@ const theme = createTheme({
         MuiToolbar: {
             styleOverrides: {
                 dense: {
-                    height: "3rem",
-                    minHeight: "3rem",
+                    height: "100%",
                     textAlign: "center",
                 }
             }
         },
     },
-})
+});
 
 export default function App({ Component, pageProps }) {
     return (
