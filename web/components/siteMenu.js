@@ -13,7 +13,7 @@ export default function SiteMenu() {
     return (
         <AppBar position="static" elevation={0}>
             <Toolbar variant="dense">
-                <Box display="flex" flexGrow={1}>
+                <Box display="flex" flexGrow={1} sx={{ height: "100%" }}>
                     {siteSections.map((section) => {
                         return section.href === `/${getCurrentSection()}`
                             ?
