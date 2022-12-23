@@ -1,33 +1,41 @@
 import Link from 'next/link';
-import { MarkGithubIcon } from '@primer/octicons-react'
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
-import styles from './siteMenu.module.css';
+import { Typography } from '@mui/material';
+import { MarkGithubIcon } from '@primer/octicons-react'
 import { getCurrentSection } from '../lib/utils';
-import { siteSections } from "../lib/settings";
+import { siteSections, siteSourceUrl } from "../lib/settings";
+import styles from './siteMenu.module.css';
 
 export default function SiteMenu() {
     return (
-        <>
-            <ul className={styles.menuList}>
-                {siteSections.map((section) => (
-                    <li key={section.name} className={section.href === `/${getCurrentSection()}` ? styles.menuItemActive : styles.menuItem}>
-                        {/* If I ever need this elsewhere, I'll pull it out into a separate component, but it's fine here for now. */}
-                        <Link className={section.href === `/${getCurrentSection()}` ? styles.menuLinkActive : styles.menuLink} href={`${section.href}`}>
-                            {section.name}
-                        </Link>
-                    </li>
+        <AppBar position="static" elevation={0} sx={{ height: "3rem", margin: "0" }}>
+            <Toolbar variant="dense">
+                <Box display="flex" flexGrow={1} sx={{ height: "100%" }}>
+                    {siteSections.map((section) => {
+                        const isCurrentSection = (section.href === `/${getCurrentSection()}`);
+                        const typographyClass = isCurrentSection ? styles.menuItemActive : styles.menuItem;
+                        const linkClass = isCurrentSection ? styles.menuLinkActive : styles.menuLink;
 
-                ))}
-
-                {/* I'll get rid of this hardcoding as soon as I have more than one of these. */}
-                <li key="github" className={styles.menuItemRight}>
-                    <Tooltip title="view source code for this site">
-                        <Link className={styles.menuLink} href="https://www.github.com/gsarjeant/gregsarjeant.net">
+                        return (
+                            <Typography component="div" className={typographyClass}>
+                                <Link className={linkClass} href={section.href}>
+                                    {section.name}
+                                </Link>
+                            </Typography>
+                        )
+                    })}
+                </Box>
+                <Tooltip title="view source code for this site">
+                    <Typography component="div" className={styles.menuItem}>
+                        <Link className={styles.menuLink} href={siteSourceUrl}>
                             <MarkGithubIcon verticalAlign="middle" size={24} />
                         </Link>
-                    </Tooltip>
-                </li>
-            </ul>
-        </>
-    )
+                    </Typography>
+                </Tooltip>
+            </Toolbar>
+        </AppBar >
+    );
 }
