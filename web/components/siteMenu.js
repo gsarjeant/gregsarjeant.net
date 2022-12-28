@@ -7,6 +7,7 @@ import { Typography } from '@mui/material';
 import { MarkGithubIcon } from '@primer/octicons-react'
 import { getCurrentSection } from '../lib/utils';
 import { siteSections, siteSourceUrl } from "../lib/settings";
+import { Tab, Tabs } from "@mui/material"
 import styles from './siteMenu.module.css';
 
 export default function SiteMenu() {
