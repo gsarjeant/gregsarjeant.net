@@ -1,10 +1,10 @@
-import Link from 'next/link';
-import AppBar from '@mui/material/AppBar';
-import { Tab, Tabs } from "@mui/material"
-import { MarkGithubIcon } from '@primer/octicons-react'
-import { getCurrentSection } from '../lib/utils';
+import Link from "next/link";
+import AppBar from "@mui/material/AppBar";
+import { Tab, Tabs, Tooltip } from "@mui/material";
+import { MarkGithubIcon } from "@primer/octicons-react";
+import { getCurrentSection } from "../lib/utils";
 import { siteSections, siteSourceUrl } from "../lib/settings";
-import styles from './siteMenu.module.css';
+import styles from "./siteMenu.module.css";
 
 export default function SiteMenu() {
     const appBarElevation = 0;
@@ -25,11 +25,13 @@ export default function SiteMenu() {
                 {siteSections.map((section) => {
                     return MenuItem(section)
                 })}
-                <Tab component={Link}
-                    className={styles.menuItemRight}
-                    href={siteSourceUrl}
-                    icon={<MarkGithubIcon verticalAlign="middle" size={menuIconSize} />}
-                />
+                <Tooltip title="view source code for this site">
+                    <Tab component={Link}
+                        className={styles.menuItemRight}
+                        href={siteSourceUrl}
+                        icon={<MarkGithubIcon verticalAlign="middle" size={menuIconSize} />}
+                    />
+                </Tooltip>
             </Tabs>
         </AppBar >
     );
