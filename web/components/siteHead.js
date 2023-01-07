@@ -1,6 +1,5 @@
 import Head from 'next/head';
 import {
-    profileImagePath,
     siteTitle,
     siteDescription,
     siteUrl,
@@ -14,12 +13,6 @@ export default function SiteHead({ title, description, path, imagePath, contentT
             <meta
                 name="description"
                 content={description ? description : siteDescription}
-            />
-            <meta
-                property="og:image"
-                content={encodeURI(
-                    siteUrl + (imagePath ? imagePath : profileImagePath)
-                )}
             />
             <meta name="og:title" content={title ? title : siteTitle} />
             <meta name="og:type" content={contentType ? contentType : "website"} />

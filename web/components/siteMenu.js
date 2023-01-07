@@ -21,7 +21,7 @@ export default function SiteMenu() {
 
     return (
         <AppBar position="static" elevation={appBarElevation} >
-            <Tabs>
+            <Tabs value={false}>
                 {siteSections.map((section) => {
                     return MenuItem(section)
                 })}
