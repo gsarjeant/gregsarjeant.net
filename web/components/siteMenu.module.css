@@ -11,6 +11,7 @@
 /* Change the link color to #111 (black) on hover */
 .menuItem:hover {
     background-color: #111;
+    text-decoration: none;
 }
 
 .menuItemActive {
@@ -23,29 +24,7 @@
     background-color: white;
 }
 
-.menuLink {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    background-color: inherit;
-    color: inherit;
-    text-decoration: none;
-}
-
-/* Change the link color to #111 (black) on hover */
-.menuLink:hover {
-    background-color: #111;
-    text-decoration: none;
-}
-
-.menuLinkActive {
-    composes: menuLink;
-    color: black;
-}
-
-/* Don't change the link color on hover for the active section */
-.menuLinkActive:hover {
-    background-color: white;
-    color: black;
-    text-decoration: none;
+.menuItemRight {
+    composes: menuItem;
+    margin-left: auto;
 }

@@ -14,16 +14,6 @@ const theme = createTheme({
             main: grey[800],
         },
     },
-    components: {
-        MuiToolbar: {
-            styleOverrides: {
-                dense: {
-                    height: "100%",
-                    textAlign: "center",
-                }
-            }
-        },
-    },
 });
 
 export default function App({ Component, pageProps }) {
