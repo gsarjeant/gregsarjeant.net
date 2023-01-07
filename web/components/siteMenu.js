@@ -7,6 +7,9 @@ import { siteSections, siteSourceUrl } from "../lib/settings";
 import styles from './siteMenu.module.css';
 
 export default function SiteMenu() {
+    const appBarElevation = 0;
+    const menuIconSize = 24;
+
     const MenuItem = (section) => {
         const isCurrentSection = (section.href === `/${getCurrentSection()}`);
         const menuItemClass = isCurrentSection ? styles.menuItemActive : styles.menuItem;
@@ -14,10 +17,10 @@ export default function SiteMenu() {
         return (
             <Tab component={Link} className={menuItemClass} href={section.href} label={section.name} />
         )
-    }
+    };
 
     return (
-        <AppBar position="static" elevation={0} sx={{ margin: "0" }}>
+        <AppBar position="static" elevation={appBarElevation} >
             <Tabs>
                 {siteSections.map((section) => {
                     return MenuItem(section)
@@ -25,8 +28,7 @@ export default function SiteMenu() {
                 <Tab component={Link}
                     className={styles.menuItemRight}
                     href={siteSourceUrl}
-                    icon={<MarkGithubIcon verticalAlign="middle" size={24} />}
-                    sx={{ width: "30px" }}
+                    icon={<MarkGithubIcon verticalAlign="middle" size={menuIconSize} />}
                 />
             </Tabs>
         </AppBar >

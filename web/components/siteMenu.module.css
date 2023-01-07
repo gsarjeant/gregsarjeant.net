@@ -14,16 +14,19 @@
     text-decoration: none;
 }
 
+/* The active section has a white background to match the default site color */
 .menuItemActive {
     composes: menuItem;
     color: black;
     background-color: white;
 }
 
+/* Don't change the color of the active section on hover */
 .menuItemActive:hover {
     background-color: white;
 }
 
+/* This class right-aligns menu items to which it is assigned */
 .menuItemRight {
     composes: menuItem;
     margin-left: auto;
