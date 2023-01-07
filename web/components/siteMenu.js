@@ -22,7 +22,12 @@ export default function SiteMenu() {
                 {siteSections.map((section) => {
                     return MenuItem(section)
                 })}
-                <Tab component={Link} className={styles.menuItemRight} href={siteSourceUrl} icon={<MarkGithubIcon verticalAlign="middle" size={24} />} sx={{ width: "30px" }} />
+                <Tab component={Link}
+                    className={styles.menuItemRight}
+                    href={siteSourceUrl}
+                    icon={<MarkGithubIcon verticalAlign="middle" size={24} />}
+                    sx={{ width: "30px" }}
+                />
             </Tabs>
         </AppBar >
     );
