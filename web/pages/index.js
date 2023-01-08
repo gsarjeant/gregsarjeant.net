@@ -41,7 +41,7 @@ export default function Home({ indexContent }) {
     <Layout>
       <SiteHead />
       <section className={utilStyles.headingMd}>
-        <p>{indexContent.tagline}</p>
+        <h2>{indexContent.tagline}</h2>
         <div dangerouslySetInnerHTML={{ __html: indexContent.contentHtml }} />
       </section>
     </Layout>
