@@ -1,4 +1,6 @@
 ---
 tagline: 'This right here is this. Right here.'
 ---
-Welcome to my home on the internet. I'm going to write about some stuff and link to some things.
+A hobby and a record of hobbies. Some things that I've done, some things that I've thought. Incomplete. Glimpses. Probably more vanity project than I'd care to admit. Would it be public otherwise? Public, but not publicized. I can live with that. Besides, it's fun.
+
+Pull up a chair and stay a while. Perhaps I'll do the same.
