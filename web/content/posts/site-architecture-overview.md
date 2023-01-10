@@ -46,7 +46,7 @@ Cloud Run sits in a comfortable place for me - it has many of the stengths of Ap
 
 ## Technologies and Frameworks
 
-The site is a [Next.js](https://github.com/vercel/next.js/) application. Next.js is a [React](https://reactjs.org) framework that provides some nice capabilities like static site generation and client-side routing. I'm using [MaterialUI](https://github.com/mui/material-ui) components for the majority of the UI elements.
+The site is a [Next.js](https://github.com/vercel/next.js/) application. The application code is [here](https://github.com/gsarjeant/gregsarjeant.net/tree/main/web).  Next.js is a [React](https://reactjs.org) framework that provides some nice capabilities like static site generation and client-side routing. I'm using [MaterialUI](https://github.com/mui/material-ui) components for the majority of the UI elements.
 
 I originally used [Hugo](https://gohugo.io) and implemented the site as a purely static site served from a Cloud Storage bucket. This was very quick to get up and running and easy to maintain, but I moved to Next.js because:
 
